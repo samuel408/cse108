@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grades Management</title>
+    <style>
+        /* Add your CSS styles here */
+    </style>
+</head>
+<body>
+    <h1>Grades Management</h1>
+
+    <h2>Get Grade by Name:</h2>
+    <input type="text" id="studentName">
+    <button onclick="getGrade()">Get Grade</button>
+    <div id="gradeResult"></div>
+
+    <h2>All Students and Grades:</h2>
+    <button onclick="getAllGrades()">Get All Grades</button>
+    <table id="allGradesTable">
+        <!-- Table to display all grades will be populated here -->
+    </table>
+
+    <h2>Add New Grade:</h2>
+    <input type="text" id="newStudentName" placeholder="Student Name">
+    <input type="text" id="newGrade" placeholder="Grade">
+    <button onclick="addGrade()">Add Grade</button>
+
+    <h2>Edit Grade:</h2>
+    <input type="text" id="editStudentName" placeholder="Student Name">
+    <input type="text" id="editGrade" placeholder="New Grade">
+    <button onclick="editGrade()">Edit Grade</button>
+
+    <h2>Delete Grade:</h2>
+    <input type="text" id="deleteStudentName" placeholder="Student Name">
+    <button onclick="deleteGrade()">Delete Grade</button>
+
+     <script> 
+        function getGrade() {
+            const studentName = document.getElementById('studentName').value;
+            fetch(`http://127.0.0.1:5000/api/grades/${studentName}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('gradeResult').innerText = data.error;
+                    } else {
+                        document.getElementById('gradeResult').innerText = `Grade for ${studentName}: ${data[studentName]}`;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+        
+        function getAllGrades() {
+            fetch('http://127.0.0.1:5000/api/grades')
+                .then(response => response.json())
+                .then(data => {
+                    const allGradesTable = document.getElementById('allGradesTable');
+                    allGradesTable.innerHTML = '';
+                    for (const student in data) {
+                        const row = `<tr><td>${student}</td><td>${data[student]}</td></tr>`;
+                        allGradesTable.innerHTML += row;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+        
+        function addGrade() {
+            const newStudentName = document.getElementById('newStudentName').value;
+            const newGrade = document.getElementById('newGrade').value;
+            const requestData = { name: newStudentName, grade: parseFloat(newGrade) };
+            fetch('http://127.0.0.1:5000/api/grades', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => console.log('Grade added:', data))
+            .catch(error => console.error('Error:', error));
+        }
+        
+        function editGrade() {
+            const editStudentName = document.getElementById('editStudentName').value;
+            const editGrade = document.getElementById('editGrade').value;
+            const requestData = { grade: parseFloat(editGrade) };
+            fetch(`http://127.0.0.1:5000/api/grades/${editStudentName}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => console.log('Grade edited:', data))
+            .catch(error => console.error('Error:', error));
+        }
+        
+        function deleteGrade() {
+            const deleteStudentName = document.getElementById('deleteStudentName').value;
+            fetch(`http://127.0.0.1:5000/api/grades/${deleteStudentName}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => console.log('Grade deleted:', data))
+            .catch(error => console.error('Error:', error));
+        }
+        
+    </script> 
+</body>
+</html>
